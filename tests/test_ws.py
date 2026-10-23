@@ -45,7 +45,7 @@ class WebSocketFramingTests(unittest.TestCase):
         with self.assertRaises(ws.WSProtocolError):
             ws.FrameParser().feed(b"\x03\x80abcd")                    # reserved opcode
         with self.assertRaises(ws.WSProtocolError):
-            ws.FrameParser().feed(b"\x09\x80abcd"[:0] + ws.encode_frame(ws.OP_PING, b"x" * 126, mask=b"abcd"))
+            ws.FrameParser().feed(ws.encode_frame(ws.OP_PING, b"x" * 126, mask=b"abcd"))
         with self.assertRaises(ws.WSProtocolError):
             ws.FrameParser(max_payload=10).feed(ws.encode_frame(ws.OP_BIN, b"x" * 11, mask=b"abcd"))
 

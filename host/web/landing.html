@@ -27,9 +27,10 @@ fetch('/api/info').then(r=>r.json()).then(i=>{
   document.getElementById('url').textContent=i.url;
   document.getElementById('pin').textContent=(i.pin_required?'PIN required. ':'')+(i.mock?'Mock/demo mode: no real gamepads are created.':'');
 });
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 function render(players){
   document.getElementById('slots').innerHTML=players.map(p=>
-   `<div class="slot ${p.status}" style="--c:${p.color}"><span class="n">P${p.slot}</span><span>${p.name?p.name.replace(/[<&]/g,''):'Waiting for player...'}${p.bot?' (bot)':''}</span><span class="st">${p.status}${p.status==='connected'&&p.latency?' · '+p.latency+' ms':''}</span></div>`).join('');
+   `<div class="slot ${esc(p.status)}" style="--c:${esc(p.color)}"><span class="n">P${esc(p.slot)}</span><span>${p.name?esc(p.name):'Waiting for player...'}${p.bot?' (bot)':''}</span><span class="st">${esc(p.status)}${p.status==='connected'&&p.latency?' · '+esc(p.latency)+' ms':''}</span></div>`).join('');
 }
 function connect(){
   const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws/view');

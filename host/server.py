@@ -234,6 +234,10 @@ class RaksServer:
         count, locked = self.pin_fails.get(peer, (0, 0))
         if locked > time.monotonic():
             return False
+        if locked:                  # lock expired: start counting afresh
+            count = 0
+        if len(self.pin_fails) > 256:
+            self.pin_fails = {k: v for k, v in self.pin_fails.items() if v[1] > time.monotonic()}
         if hmac.compare_digest(str(pin or ""), self.pin):
             self.pin_fails.pop(peer, None)
             return True
@@ -307,7 +311,7 @@ class RaksServer:
         elif self.cfg["actions"].get("mouse"):
             mouse = self._extra("mouse")
             if mouse:
-                mouse.move(*val)
+                mouse.move(*[max(-512, min(512, v)) for v in val[:3]], val[3])
 
     def _on_text(self, player, sock, m):
         t = m["t"]

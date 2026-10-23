@@ -36,7 +36,7 @@ function draw(cv,p){
 }
 function render(m){
   if(!pads.children.length||pads.children.length!==m.players.length){
-    pads.innerHTML=m.players.map(p=>`<div class="pad" id="p${p.slot}" style="--c:${p.color}"><h2><span></span><span class="lat"></span></h2><canvas width="320" height="216"></canvas></div>`).join('');}
+    pads.innerHTML=m.players.map(p=>`<div class="pad" id="p${+p.slot}" style="--c:${String(p.color).replace(/[^#\w]/g,'')}"><h2><span></span><span class="lat"></span></h2><canvas width="320" height="216"></canvas></div>`).join('');}
   m.players.forEach(p=>{const el=document.getElementById('p'+p.slot);el.className='pad '+p.status;
     el.querySelector('span').textContent='P'+p.slot+' '+(p.name||'(free)')+(p.bot?' [bot]':'');
     el.querySelector('.lat').textContent=p.status==='connected'&&p.latency?p.latency+' ms':'';

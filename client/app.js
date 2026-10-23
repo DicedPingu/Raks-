@@ -174,6 +174,7 @@ const Net = {
 
 /* demo "host": answers system-menu requests locally */
 const Demo = {
+  slot: 1,
   features: { es_start: true, es_stop: true, es_restart: true, emukill: true, vol_up: true, vol_down: true, vol_mute: true, reboot: false, shutdown: false, keyboard: true, mouse: true, admin: true },
   players: [{ slot: 1, name: 'You', color: COLORS[0], status: 'connected', bot: false }, { slot: 2, name: 'Bot', color: COLORS[1], status: 'connected', bot: true },
     { slot: 3, name: '', color: COLORS[2], status: 'free', bot: false }, { slot: 4, name: '', color: COLORS[3], status: 'free', bot: false }],

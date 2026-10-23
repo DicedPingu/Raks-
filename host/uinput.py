@@ -41,7 +41,7 @@ UI_SET_ABSBIT = 0x40045567
 ABS_CNT = 64
 EVENT_FMT = "llHHi"  # struct input_event (native sizes)
 EVENT_SIZE = struct.calcsize(EVENT_FMT)
-USER_DEV_FMT = "80sHHHHI"
+USER_DEV_FMT = "<80sHHHHI"
 USER_DEV_SIZE = struct.calcsize(USER_DEV_FMT) + 4 * ABS_CNT * 4
 
 # (min, max, fuzz, flat) - Xbox-360-like ranges
