@@ -151,7 +151,7 @@ fully offline**; real play still needs a Raks host reachable on your LAN (enter 
 
 **Get it:** download `raks-<version>-debug.apk` from the latest GitHub Release (or the `raks-release-assets` artifact of a CI run), verify
 with `sha256sum -c SHA256SUMS.txt --ignore-missing`, copy it to the phone (USB, `adb install raks-<version>-debug.apk`, or a download link),
-allow "install unknown apps" for your file manager, and open it. Then start the host (Quick start above), enter `http`-less `ip:port`
+allow "install unknown apps" for your file manager, and open it. Then start the host (Quick start above), enter the host as `ip:port`
 (e.g. `192.168.1.50:8080`) and connect.
 
 **Build locally:** `sh android/build.sh` (JDK 17 + Android SDK with platform 34+ and build-tools; set `ANDROID_HOME`). Output: `android/build/raks-<version>-debug.apk`.
