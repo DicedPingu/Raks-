@@ -5,3 +5,5 @@ node_modules/
 *.log
 raks.pid
 .pytest_cache/
+dist/
+android/build/

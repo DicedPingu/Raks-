@@ -1,0 +1,50 @@
+name: Android APK and release
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Build debug-signed APK
+        run: sh android/build.sh
+      - name: Package host bundle and checksums
+        run: |
+          TAG=""
+          case "$GITHUB_REF" in refs/tags/v*) TAG="--tag ${GITHUB_REF#refs/tags/}";; esac
+          python3 scripts/package_release.py --out dist $TAG --apk android/build/raks-*-debug.apk
+          cat dist/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: raks-release-assets
+          path: dist/*
+          if-no-files-found: error
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: raks-release-assets
+          path: dist
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --title "Raks $GITHUB_REF_NAME" \
+            --notes "Debug-signed Android APK (not a production signature), host bundle (.tar.gz/.zip) and SHA256SUMS.txt. See README for install steps."
