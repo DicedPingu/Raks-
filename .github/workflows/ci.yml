@@ -28,4 +28,4 @@ jobs:
               json.load(open(f)); print("ok", f)
           PY
       - name: Shell syntax
-        run: sh -n run.sh && sh -n install.sh
+        run: sh -n run.sh && sh -n install.sh && sh -n android/build.sh

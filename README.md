@@ -138,6 +138,30 @@ contrib/    systemd unit, udev rule, modules-load file
 * **Screen turns off** – the Wake Lock API is used where supported (iOS 16.4+ and Android); keep the phone's auto-lock long otherwise.
 * **Wrong PIN loop** – 5 wrong PINs lock that IP for 30 s.
 
+## Android app and releases
+
+A thin Android wrapper (WebView) around the same client/presets lives in `android/`. It bundles the PWA, so **Try Demo works
+fully offline**; real play still needs a Raks host reachable on your LAN (enter its `ip:port`, name and PIN as in the browser).
+
+* Minimum Android 7.0 (API 24). Landscape, fullscreen, keeps the screen on, Back navigates inside the app. Permissions: INTERNET, VIBRATE, WAKE_LOCK.
+* Plain `http`/`ws` to the LAN host is allowed (Android cannot restrict cleartext to private IPs); the app loads only its bundled pages,
+  blocks other web requests/navigation, and exposes no JavaScript bridge. Host actions remain the host-side whitelist.
+* **The APK is debug-signed with a throwaway key, not a production signature.** Each build uses a different key, so uninstall the old
+  one before installing a build from another run. No store/secret signing is configured.
+
+**Get it:** download `raks-<version>-debug.apk` from the latest GitHub Release (or the `raks-release-assets` artifact of a CI run), verify
+with `sha256sum -c SHA256SUMS.txt --ignore-missing`, copy it to the phone (USB, `adb install raks-<version>-debug.apk`, or a download link),
+allow "install unknown apps" for your file manager, and open it. Then start the host (Quick start above), enter `http`-less `ip:port`
+(e.g. `192.168.1.50:8080`) and connect.
+
+**Build locally:** `sh android/build.sh` (JDK 17 + Android SDK with platform 34+ and build-tools; set `ANDROID_HOME`). Output: `android/build/raks-<version>-debug.apk`.
+
+**Host bundle:** `python3 scripts/package_release.py` creates `dist/raks-<version>.tar.gz`, `.zip` and `SHA256SUMS.txt` (no tests/caches; with README, LICENSE, docs,
+config). Unpack, then `python3 host/raks_host.py` or `./install.sh` on Batocera.
+
+**Versioning / releasing:** `VERSION` in `host/server.py` is the single source (APK versionName, bundle name). Release: bump it, commit, push tag
+`v<VERSION>`; the `Android APK and release` workflow fails if the tag differs, then publishes the APK, bundle and checksums.
+
 ## Security notes
 
 Raks is meant for a **trusted home LAN only**. Do not expose the port to the internet. Traffic is plain HTTP/WS. The PIN (`pin` in

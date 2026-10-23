@@ -737,7 +737,8 @@ async function boot() {
   await loadPresets();
   Layouts.select(settings.layout, true);
   bindEdit(); bindMenu(); bindTouchpad();
-  const served = location.protocol.startsWith('http') && location.host;
+  const native = new URLSearchParams(location.search).has('app'); // packaged Android wrapper: no host behind this origin
+  const served = !native && location.protocol.startsWith('http') && location.host;
   if (served) settings.host = location.host;
   $('#host').value = settings.host; $('#name').value = settings.name; $('#pin').value = store.get('pin', '');
   $('#pinrow').hidden = !$('#pin').value;

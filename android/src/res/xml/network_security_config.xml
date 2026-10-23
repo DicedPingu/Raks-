@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Raks talks plain http/ws to a host on a trusted LAN. Android cannot express "private IPs only" here,
+     so cleartext is allowed app-wide; the app itself only loads its bundled pages (see MainActivity)
+     and WebView sub-requests to any other http(s) host are blocked. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
