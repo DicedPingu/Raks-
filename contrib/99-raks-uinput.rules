@@ -1,0 +1,3 @@
+# Let members of the "input" group open /dev/uinput (copy to /etc/udev/rules.d/, then
+# `sudo udevadm control --reload && sudo udevadm trigger`).
+KERNEL=="uinput", MODE="0660", GROUP="input", OPTIONS+="static_node=uinput"

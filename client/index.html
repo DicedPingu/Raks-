@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Raks">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="styles.css">
+<title>Raks Gamepad</title>
+</head>
+<body>
+
+<section id="connect">
+  <div class="card">
+    <h1>Raks</h1>
+    <p class="tag">Use your phone as a wireless gamepad</p>
+    <div id="status" class="status">Ready</div>
+    <label>Host <input id="host" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="192.168.1.50:8080"></label>
+    <div class="row">
+      <label>Name (optional) <input id="name" maxlength="24" placeholder="Player"></label>
+      <label id="pinrow">PIN <input id="pin" inputmode="numeric" maxlength="4" placeholder="----"></label>
+    </div>
+    <div class="row">
+      <button id="btn-connect" class="primary">Connect</button>
+      <button id="btn-demo">Try Demo</button>
+    </div>
+    <p class="hint">Tip: use <b>Add to Home Screen</b> for fullscreen. Landscape works best.</p>
+  </div>
+</section>
+
+<div id="stage" hidden>
+  <canvas id="game"></canvas>
+  <div id="viz" hidden></div>
+  <div id="evlog" hidden></div>
+  <div id="pad"></div>
+  <div id="hud">
+    <span id="badge">P?</span><span id="lat"></span>
+    <button id="btn-menu" aria-label="Menu">&#9776;</button>
+  </div>
+  <div id="toast"></div>
+  <div id="reconnect" hidden>Reconnecting&hellip;</div>
+</div>
+
+<div id="touchpad" hidden>
+  <div id="tp-area">Touchpad<br><small>tap = click &middot; drag = move</small></div>
+  <div id="tp-scroll">scroll</div>
+  <div id="tp-side">
+    <button id="tp-left">Left</button><button id="tp-mid">Mid</button><button id="tp-right">Right</button>
+    <input id="tp-text" placeholder="Type here&hellip;" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+    <div id="tp-keys"></div>
+    <button id="tp-close">Close</button>
+  </div>
+</div>
+
+<div id="menu" hidden>
+  <div class="panel">
+    <nav id="tabs">
+      <button data-tab="layout" class="on">Layout</button>
+      <button data-tab="settings">Settings</button>
+      <button data-tab="hotkeys">Hotkeys</button>
+      <button data-tab="system">System</button>
+      <button id="btn-menu-close" class="x" aria-label="Close">&times;</button>
+    </nav>
+
+    <div class="tab" id="tab-layout">
+      <h3>Presets</h3><div id="presets" class="chips"></div>
+      <h3>My layouts</h3><div id="customs" class="chips"></div>
+      <div class="row"><button id="btn-edit" class="primary">Edit layout</button>
+        <button id="btn-reset">Reset to preset</button></div>
+      <details><summary>Export / import</summary>
+        <textarea id="io" rows="4" spellcheck="false" placeholder="Layout JSON"></textarea>
+        <div class="row"><button id="btn-export">Export</button><button id="btn-copy">Copy</button>
+          <button id="btn-download">Download</button><button id="btn-import">Import</button>
+          <label class="filebtn">File&hellip;<input id="file" type="file" accept=".json,application/json" hidden></label></div>
+      </details>
+    </div>
+
+    <div class="tab" id="tab-settings" hidden>
+      <label class="sw"><input type="checkbox" id="s-haptics"> Haptics (vibration; not available on iOS)</label>
+      <label>Haptic strength <input type="range" id="s-hapticms" min="5" max="40"></label>
+      <label>Button size <input type="range" id="s-scale" min="60" max="150"></label>
+      <label>Opacity <input type="range" id="s-opacity" min="20" max="100"></label>
+      <label>Stick deadzone <input type="range" id="s-deadzone" min="0" max="40"></label>
+      <label class="sw"><input type="checkbox" id="s-mirror"> Left-handed (mirror layout)</label>
+      <label class="sw"><input type="checkbox" id="s-latency"> Show latency</label>
+      <label>Hotkey button for chords
+        <select id="s-hotkey"><option value="mode">Mode / Guide (Xbox)</option><option value="select">Select</option></select></label>
+      <div class="row"><button id="btn-fs">Fullscreen</button><button id="btn-disconnect">Disconnect / exit demo</button></div>
+    </div>
+
+    <div class="tab" id="tab-hotkeys" hidden>
+      <p class="hint">Sends Batocera/RetroArch hotkey chords as button presses.</p>
+      <div id="chords" class="chips"></div>
+    </div>
+
+    <div class="tab" id="tab-system" hidden>
+      <div id="sysinfo" class="hint"></div>
+      <h3>Players</h3><div id="players"></div>
+      <h3>Host actions</h3><div id="actions" class="chips"></div>
+      <h3>Keyboard &amp; mouse</h3>
+      <div class="row"><button id="btn-touchpad">Open touchpad / keyboard</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="editbar" hidden>
+  <div class="eb-head"><b>Edit layout</b>
+    <button id="eb-side" title="Move this panel to the other side">&#8646;</button>
+    <button id="eb-done" class="primary">Done</button></div>
+  <label>Control <select id="eb-select"></select></label>
+  <div id="eb-props">
+    <label>Label <input id="eb-label" maxlength="6"></label>
+    <label id="eb-code-row">Sends <select id="eb-code"></select></label>
+    <label>Size <input type="range" id="eb-size" min="6" max="60"></label>
+    <label>Opacity <input type="range" id="eb-opacity" min="10" max="100"></label>
+    <div class="row"><label class="sw"><input type="checkbox" id="eb-visible"> Visible</label>
+      <button id="eb-delete">Remove</button></div>
+  </div>
+  <div class="row"><select id="eb-add"></select><button id="eb-addbtn">Add</button></div>
+  <div class="row"><input id="eb-name" placeholder="Layout name"><button id="eb-saveas">Save as</button></div>
+  <div class="row"><button id="eb-reset">Reset</button><button id="eb-delete-layout">Delete layout</button></div>
+  <p class="hint">Drag controls to move. Pinch a control with two fingers to resize.</p>
+</div>
+
+<div id="rotate"><div>&#8635;<br>Rotate your phone to landscape</div></div>
+
+<script src="demo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

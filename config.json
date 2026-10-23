@@ -1,0 +1,27 @@
+{
+  "port": 8080,
+  "bind": "0.0.0.0",
+  "max_players": 4,
+  "pin": "",
+  "default_preset": "snes",
+  "hostname": "raks",
+  "mdns": true,
+  "allow_admin": true,
+  "slot_reserve_seconds": 120,
+  "uinput": {
+    "path": "/dev/uinput",
+    "vendor": 1118,
+    "product": 654
+  },
+  "actions": {
+    "keyboard": true,
+    "mouse": true,
+    "volume": true,
+    "es_start": true,
+    "es_stop": true,
+    "es_restart": true,
+    "emukill": true,
+    "reboot": false,
+    "shutdown": false
+  }
+}

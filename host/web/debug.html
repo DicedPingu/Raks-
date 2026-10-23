@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Raks debug</title>
+<style>
+:root{color-scheme:dark}
+body{margin:0;font:14px system-ui,sans-serif;background:#0d1117;color:#e6edf3;padding:16px}
+h1{font-size:20px;margin:0 0 12px}
+#pads{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.pad{background:#161b22;border:2px solid var(--c);border-radius:14px;padding:12px;opacity:.45}
+.pad.connected{opacity:1}
+.pad h2{margin:0 0 8px;font-size:16px;color:var(--c);display:flex;justify-content:space-between}
+canvas{width:100%;background:#0d1117;border-radius:10px;display:block}
+#log{margin-top:16px;font:12px ui-monospace,monospace;color:#8b949e;max-height:160px;overflow:auto;white-space:pre}
+a{color:#58a6ff}
+</style></head><body>
+<h1>Raks debug - live controller state &middot; <a href="/">landing</a></h1>
+<div id="pads"></div><div id="log"></div>
+<script>
+const NAMES=["south","east","north","west","tl","tr","tl2","tr2","select","start","mode","thumbl","thumbr"];
+const LABEL={south:"A/✕",east:"B/○",north:"Y/△",west:"X/□",tl:"L1",tr:"R1",tl2:"L2",tr2:"R2",select:"SEL",start:"START",mode:"MODE",thumbl:"L3",thumbr:"R3"};
+const pads=document.getElementById('pads');
+function draw(cv,p){
+  const g=cv.getContext('2d'),W=cv.width,H=cv.height;g.clearRect(0,0,W,H);
+  const stick=(cx,cy,x,y)=>{g.strokeStyle='#30363d';g.lineWidth=2;g.beginPath();g.arc(cx,cy,34,0,7);g.stroke();
+    g.fillStyle=p.color;g.beginPath();g.arc(cx+x/32768*28,cy+y/32768*28,10,0,7);g.fill();};
+  stick(70,100,p.lx||0,p.ly||0);stick(250,100,p.rx||0,p.ry||0);
+  // d-pad
+  g.fillStyle='#30363d';g.fillRect(124,60,12,12);
+  const dp=(x,y,on)=>{g.fillStyle=on?p.color:'#30363d';g.fillRect(x,y,14,14)};
+  dp(153,64,p.hy<0);dp(153,92,p.hy>0);dp(139,78,p.hx<0);dp(167,78,p.hx>0);
+  // triggers
+  g.fillStyle='#30363d';g.fillRect(10,10,100,10);g.fillRect(210,10,100,10);
+  g.fillStyle=p.color;g.fillRect(10,10,100*(p.lt||0)/255,10);g.fillRect(210,10,100*(p.rt||0)/255,10);
+  NAMES.forEach((n,i)=>{const on=p.buttons>>i&1;const x=10+(i%7)*44,y=156+Math.floor(i/7)*28;
+    g.fillStyle=on?p.color:'#21262d';g.fillRect(x,y,40,22);g.fillStyle=on?'#000':'#8b949e';g.font='11px sans-serif';g.textAlign='center';g.fillText(LABEL[n],x+20,y+15);});
+}
+function render(m){
+  if(!pads.children.length||pads.children.length!==m.players.length){
+    pads.innerHTML=m.players.map(p=>`<div class="pad" id="p${p.slot}" style="--c:${p.color}"><h2><span></span><span class="lat"></span></h2><canvas width="320" height="216"></canvas></div>`).join('');}
+  m.players.forEach(p=>{const el=document.getElementById('p'+p.slot);el.className='pad '+p.status;
+    el.querySelector('span').textContent='P'+p.slot+' '+(p.name||'(free)')+(p.bot?' [bot]':'');
+    el.querySelector('.lat').textContent=p.status==='connected'&&p.latency?p.latency+' ms':'';
+    draw(el.querySelector('canvas'),p);});
+  document.getElementById('log').textContent=m.events.slice().reverse().map(e=>`P${e.slot} ${e.button} ${e.down?'DOWN':'up'}`).join('\n');
+}
+function connect(){const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws/view');
+  ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.t==='snap')render(m)};ws.onclose=()=>setTimeout(connect,1500);}
+connect();
+</script></body></html>
