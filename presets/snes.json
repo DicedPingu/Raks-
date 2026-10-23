@@ -1,0 +1,122 @@
+{
+ "id": "snes",
+ "name": "SNES",
+ "description": "D-pad, A/B/X/Y, L/R, Select, Start",
+ "version": 1,
+ "controls": [
+  {
+   "id": "dpad",
+   "type": "dpad",
+   "x": 0.15,
+   "y": 0.58,
+   "size": 0.46,
+   "maps": "hat",
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "l",
+   "type": "trigger",
+   "x": 0.12,
+   "y": 0.13,
+   "size": 0.17,
+   "code": "tl",
+   "label": "L",
+   "shape": "pill",
+   "analog": false,
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "r",
+   "type": "trigger",
+   "x": 0.88,
+   "y": 0.13,
+   "size": 0.17,
+   "code": "tr",
+   "label": "R",
+   "shape": "pill",
+   "analog": false,
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "select",
+   "type": "button",
+   "x": 0.42,
+   "y": 0.84,
+   "size": 0.13,
+   "code": "select",
+   "label": "SELECT",
+   "shape": "pill",
+   "color": "#8b8b95",
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "start",
+   "type": "button",
+   "x": 0.58,
+   "y": 0.84,
+   "size": 0.13,
+   "code": "start",
+   "label": "START",
+   "shape": "pill",
+   "color": "#8b8b95",
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "x",
+   "type": "button",
+   "x": 0.84,
+   "y": 0.36,
+   "size": 0.19,
+   "code": "north",
+   "label": "X",
+   "shape": "circle",
+   "color": "#4d6bd6",
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "b",
+   "type": "button",
+   "x": 0.84,
+   "y": 0.76,
+   "size": 0.19,
+   "code": "south",
+   "label": "B",
+   "shape": "circle",
+   "color": "#e8c13a",
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "y",
+   "type": "button",
+   "x": 0.74,
+   "y": 0.56,
+   "size": 0.19,
+   "code": "west",
+   "label": "Y",
+   "shape": "circle",
+   "color": "#3dbd5f",
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "a",
+   "type": "button",
+   "x": 0.94,
+   "y": 0.56,
+   "size": 0.19,
+   "code": "east",
+   "label": "A",
+   "shape": "circle",
+   "color": "#e0393e",
+   "opacity": 0.8,
+   "visible": true
+  }
+ ]
+}

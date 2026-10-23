@@ -1,0 +1,20 @@
+# Generic Linux (systemd). Copy to /etc/systemd/system/raks.service, adjust paths, then:
+#   sudo systemctl daemon-reload && sudo systemctl enable --now raks
+[Unit]
+Description=Raks - phones as wireless gamepads
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStartPre=-/sbin/modprobe uinput
+ExecStart=/usr/bin/python3 /opt/raks/host/raks_host.py --config /opt/raks/config.json
+WorkingDirectory=/opt/raks
+Restart=on-failure
+RestartSec=3
+# Running as root is simplest (needs /dev/uinput). To run unprivileged instead,
+# install contrib/99-raks-uinput.rules and set User=/Group= below.
+#User=raks
+#Group=input
+
+[Install]
+WantedBy=multi-user.target

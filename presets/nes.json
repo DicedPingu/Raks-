@@ -1,0 +1,70 @@
+{
+ "id": "nes",
+ "name": "NES",
+ "description": "D-pad, B, A, Select, Start",
+ "version": 1,
+ "controls": [
+  {
+   "id": "dpad",
+   "type": "dpad",
+   "x": 0.17,
+   "y": 0.55,
+   "size": 0.52,
+   "maps": "hat",
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "select",
+   "type": "button",
+   "x": 0.39,
+   "y": 0.8,
+   "size": 0.15,
+   "code": "select",
+   "label": "SELECT",
+   "shape": "pill",
+   "color": "#8b8b95",
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "start",
+   "type": "button",
+   "x": 0.61,
+   "y": 0.8,
+   "size": 0.15,
+   "code": "start",
+   "label": "START",
+   "shape": "pill",
+   "color": "#8b8b95",
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "b",
+   "type": "button",
+   "x": 0.76,
+   "y": 0.62,
+   "size": 0.24,
+   "code": "south",
+   "label": "B",
+   "shape": "circle",
+   "color": "#e0393e",
+   "opacity": 0.8,
+   "visible": true
+  },
+  {
+   "id": "a",
+   "type": "button",
+   "x": 0.91,
+   "y": 0.62,
+   "size": 0.24,
+   "code": "east",
+   "label": "A",
+   "shape": "circle",
+   "color": "#e0393e",
+   "opacity": 0.8,
+   "visible": true
+  }
+ ]
+}

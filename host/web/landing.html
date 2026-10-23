@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Raks - phones as gamepads</title>
+<style>
+:root{color-scheme:dark}
+body{margin:0;font:16px system-ui,sans-serif;background:#0d1117;color:#e6edf3;display:flex;flex-wrap:wrap;gap:32px;justify-content:center;align-items:flex-start;padding:32px}
+h1{margin:0 0 4px;font-size:34px;letter-spacing:.04em}
+.sub{color:#8b949e;margin:0 0 20px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:16px;padding:20px}
+#qr{width:280px;height:280px;border-radius:8px;display:block;background:#fff}
+code{background:#0d1117;padding:2px 6px;border-radius:6px;word-break:break-all}
+.slots{display:grid;gap:10px;min-width:300px}
+.slot{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:#0d1117;border:2px solid var(--c);opacity:.5}
+.slot.connected{opacity:1;background:color-mix(in srgb,var(--c) 14%,#0d1117)}
+.slot .n{font-weight:700;font-size:20px;color:var(--c);width:34px}
+.slot .st{margin-left:auto;color:#8b949e;font-size:13px}
+a{color:#58a6ff}
+</style></head><body>
+<div>
+  <h1>Raks</h1><p class="sub">Use your phones as wireless gamepads. No app install.</p>
+  <div class="card"><img id="qr" src="/qr.svg" alt="QR code"><p>Scan with your phone camera<br>or open <code id="url"></code></p><p id="pin" class="sub"></p></div>
+</div>
+<div class="card"><h2 style="margin-top:0">Players</h2><div class="slots" id="slots"></div>
+<p class="sub"><a href="/debug">Live controller debug view</a> &middot; <a href="/play/">Open controller on this device</a></p></div>
+<script>
+fetch('/api/info').then(r=>r.json()).then(i=>{
+  document.getElementById('url').textContent=i.url;
+  document.getElementById('pin').textContent=(i.pin_required?'PIN required. ':'')+(i.mock?'Mock/demo mode: no real gamepads are created.':'');
+});
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+function render(players){
+  document.getElementById('slots').innerHTML=players.map(p=>
+   `<div class="slot ${esc(p.status)}" style="--c:${esc(p.color)}"><span class="n">P${esc(p.slot)}</span><span>${p.name?esc(p.name):'Waiting for player...'}${p.bot?' (bot)':''}</span><span class="st">${esc(p.status)}${p.status==='connected'&&p.latency?' · '+esc(p.latency)+' ms':''}</span></div>`).join('');
+}
+function connect(){
+  const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws/view');
+  ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.t==='snap')render(m.players)};
+  ws.onclose=()=>setTimeout(connect,1500);
+}
+connect();
+</script></body></html>

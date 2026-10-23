@@ -1,0 +1,31 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Python unit tests
+        run: python -m unittest discover -s tests -v
+      - name: JS syntax check
+        run: |
+          for f in client/*.js; do node --check "$f"; done
+      - name: JSON validity
+        run: |
+          python - <<'PY'
+          import glob, json
+          for f in glob.glob("presets/*.json") + ["config.json", "client/manifest.webmanifest"]:
+              json.load(open(f)); print("ok", f)
+          PY
+      - name: Shell syntax
+        run: sh -n run.sh && sh -n install.sh
