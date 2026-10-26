@@ -5,6 +5,7 @@ Usage:  python3 host/raks_host.py [--demo] [--mock] [--pin 1234] [--port 8080] .
 """
 import argparse
 import asyncio
+import ipaddress
 import logging
 import os
 import signal
@@ -24,22 +25,46 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def detect_ip():
-    """Best-effort LAN IP (no packets are actually sent)."""
+    """Backward-compatible helper: return the first discovered local IPv4."""
+    return discover_ips()[0]
+
+
+def discover_ips(preferred=None):
+    """Discover usable local IPv4 addresses in priority order."""
+    out, seen = [], set()
+
+    def add(ip):
+        if not ip:
+            return
+        try:
+            a = ipaddress.ip_address(ip)
+        except ValueError:
+            return
+        if a.version != 4 or a.is_loopback or a.is_unspecified:
+            return
+        if ip in seen:
+            return
+        seen.add(ip)
+        out.append(ip)
+
+    add(preferred)
     for target in ("10.255.255.255", "192.168.255.255", "8.8.8.8"):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             s.connect((target, 1))
-            ip = s.getsockname()[0]
-            if ip and not ip.startswith("127."):
-                return ip
+            add(s.getsockname()[0])
         except OSError:
             pass
         finally:
             s.close()
+
     try:
-        return socket.gethostbyname(socket.gethostname())
+        infos = socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET, socket.SOCK_DGRAM)
+        for info in infos:
+            add(info[4][0])
     except OSError:
-        return "127.0.0.1"
+        pass
+    return out or ["127.0.0.1"]
 
 
 def parse_args(argv=None):
@@ -58,11 +83,18 @@ def parse_args(argv=None):
     return ap.parse_args(argv)
 
 
-def banner(srv, mode, mdns_on):
+def banner(srv, mode, mdns_on, ips):
     big = "\n".join(["", "  ____       _        ", " |  _ \\ __ _| | _____ ", " | |_) / _` | |/ / __|",
                      " |  _ < (_| |   <\\__ \\", " |_| \\_\\__,_|_|\\_\\___/", ""])
     lines = [big, "  Raks %s - phones as wireless gamepads" % VERSION, "  Mode: %s" % mode, "",
-             "  Scan with your phone, or open:", "      %s" % srv.url]
+             "  Open on your phone:", "      %s" % srv.url]
+    if len(ips) > 1:
+        lines.append("  Other local addresses (same host, same port):")
+        for ip in ips[1:5]:
+            lines.append("      http://%s:%d/play/" % (ip, srv.port))
+        if len(ips) > 5:
+            lines.append("      ...and %d more" % (len(ips) - 5))
+    lines.append("  No Wi-Fi? Use Bluetooth/USB tethering, then pick the matching address above.")
     if mdns_on:
         lines.append("      http://%s.local:%d/play/   (if your phone supports mDNS)" % (srv.cfg["hostname"], srv.port))
     lines.append("  Landing page / debug: http://%s:%d/  and  /debug" % (srv.ip, srv.port))
@@ -95,11 +127,12 @@ async def amain(args):
     else:
         mock, mode = True, ("MOCK - %s is not usable (try `modprobe uinput`, run as root); "
                             "events are only logged and shown on /debug" % cfg["uinput"]["path"])
-    ip = args.ip or detect_ip()
+    ips = discover_ips(args.ip)
+    ip = ips[0]
     srv = RaksServer(cfg, ROOT, mock=mock, ip=ip)
     await srv.start()
     responder = await mdns.start_mdns(cfg["hostname"], ip) if cfg["mdns"] else None
-    banner(srv, mode, responder is not None)
+    banner(srv, mode, responder is not None, ips)
 
     bots = []
     if args.demo:

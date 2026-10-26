@@ -4,6 +4,7 @@ import _path  # noqa: F401
 import mdns
 import players
 import qr
+import raks_host
 import uinput
 
 
@@ -81,6 +82,70 @@ class MDNSTests(unittest.TestCase):
         qs = mdns.parse_questions(q)
         self.assertEqual((qs[0][0].lower().rstrip('.'), qs[0][1]), ('raks.local', 1))
         self.assertEqual(list(mdns.parse_questions(b"junk")), [])
+
+
+class HostIpDiscoveryTests(unittest.TestCase):
+    def test_discover_ips_includes_preferred_and_filters_loopback(self):
+        orig_socket = raks_host.socket.socket
+        orig_getaddrinfo = raks_host.socket.getaddrinfo
+
+        class FakeSocket:
+            calls = 0
+
+            def __init__(self, *a, **kw):
+                self.ip = "127.0.0.1"
+
+            def connect(self, target):
+                FakeSocket.calls += 1
+                if FakeSocket.calls == 1:
+                    self.ip = "192.168.44.1"
+                else:
+                    raise OSError("no route")
+
+            def getsockname(self):
+                return (self.ip, 12345)
+
+            def close(self):
+                return None
+
+        def fake_getaddrinfo(*args, **kwargs):
+            return [(None, None, None, None, ("127.0.0.1", 0)),
+                    (None, None, None, None, ("172.20.10.1", 0)),
+                    (None, None, None, None, ("192.168.44.1", 0))]
+
+        raks_host.socket.socket = FakeSocket
+        raks_host.socket.getaddrinfo = fake_getaddrinfo
+        try:
+            ips = raks_host.discover_ips("10.0.0.50")
+        finally:
+            raks_host.socket.socket = orig_socket
+            raks_host.socket.getaddrinfo = orig_getaddrinfo
+
+        self.assertEqual(ips, ["10.0.0.50", "192.168.44.1", "172.20.10.1"])
+
+    def test_discover_ips_falls_back_to_loopback(self):
+        orig_socket = raks_host.socket.socket
+        orig_getaddrinfo = raks_host.socket.getaddrinfo
+
+        class DeadSocket:
+            def __init__(self, *a, **kw):
+                pass
+
+            def connect(self, target):
+                raise OSError("no route")
+
+            def close(self):
+                return None
+
+        raks_host.socket.socket = DeadSocket
+        raks_host.socket.getaddrinfo = lambda *a, **kw: []
+        try:
+            ips = raks_host.discover_ips()
+        finally:
+            raks_host.socket.socket = orig_socket
+            raks_host.socket.getaddrinfo = orig_getaddrinfo
+
+        self.assertEqual(ips, ["127.0.0.1"])
 
 
 if __name__ == "__main__":

@@ -42,6 +42,9 @@ events are logged to the console and shown live on `http://HOST:PORT/debug`. To 
 either run as root or install `contrib/99-raks-uinput.rules` (group `input`) and `contrib/uinput.conf` (load at boot).
 A systemd unit is in `contrib/raks.service`.
 
+No Wi-Fi on the PC is fine. Start `python3 host/raks_host.py`, then use one of the printed `http://x.x.x.x:PORT/play/` addresses:
+same Wi-Fi LAN, Bluetooth tethering, and USB tethering all work as long as the phone can reach that address.
+
 Options are in `config.json` (`--config` for another file; CLI flags override it):
 
 | key | default | meaning |
@@ -130,7 +133,7 @@ contrib/    systemd unit, udev rule, modules-load file
 ## Troubleshooting
 
 * **"uinput unavailable, mock mode"** – `sudo modprobe uinput`; check `ls -l /dev/uinput`; run as root or use the udev rule. Batocera: run `./run.sh start` as root.
-* **Phone can't reach the page** – same Wi-Fi/subnet? Guest/"client isolation" Wi-Fi blocks it. Check the firewall for the port. Use the IP URL if `raks.local` does not resolve (Android often lacks mDNS).
+* **Phone can't reach the page** – phone and host must share the same link (Wi-Fi, Bluetooth tethering, or USB tethering). Use one of the host banner URLs (`http://x.x.x.x:PORT/play/`); if one fails, try another printed address. Guest/"client isolation" Wi-Fi can block access. Check the firewall for the port. Use the IP URL if `raks.local` does not resolve (Android often lacks mDNS).
 * **Pad not recognised in a game** – EmulationStation: *Main menu → Controller settings* and configure "Raks Player N" once. Batocera may match controllers by GUID, and all Raks pads share the Xbox 360 GUID with different names; if a game maps it wrongly, configure it once in ES.
 * **Buttons ghost / stick drifts** – raise the deadzone in Settings; make sure nothing else is touching the controller area.
 * **No vibration on iOS** – iOS Safari has no `navigator.vibrate`; haptics only work on Android.
@@ -141,7 +144,7 @@ contrib/    systemd unit, udev rule, modules-load file
 ## Android app and releases
 
 A thin Android wrapper (WebView) around the same client/presets lives in `android/`. It bundles the PWA, so **Try Demo works
-fully offline**; real play still needs a Raks host reachable on your LAN (enter its `ip:port`, name and PIN as in the browser).
+fully offline**; real play still needs a reachable Raks host (same Wi-Fi LAN, Bluetooth tethering, or USB tethering; enter `ip:port`, name and PIN as in the browser).
 
 * Minimum Android 7.0 (API 24). Landscape, fullscreen, keeps the screen on, Back navigates inside the app. Permissions: INTERNET, VIBRATE, WAKE_LOCK.
 * Plain `http`/`ws` to the LAN host is allowed (Android cannot restrict cleartext to private IPs); the app loads only its bundled pages,
